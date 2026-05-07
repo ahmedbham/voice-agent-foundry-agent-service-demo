@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: voice-agent-foundry-agent-service-demo
+metadata:
+  template: voice-agent-foundry-agent-service-demo@1.0.0
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: ./scripts/postprovision.ps1
+      continueOnError: false
+      interactive: true
+    posix:
+      shell: sh
+      run: ./scripts/postprovision.sh
+      continueOnError: false
+      interactive: true
