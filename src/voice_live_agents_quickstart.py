@@ -61,7 +61,7 @@ def main() -> None:
     voice_name = os.environ.get("VOICE_NAME", "en-US-Ava:DragonHDLatestNeural")
     agent_name = os.environ.get("AGENT_NAME", "")
     agent_version = os.environ.get("AGENT_VERSION") or None
-    project_name = os.environ.get("PROJECT_NAME", "")
+    project_name = os.environ.get("PROJECT_NAME") or os.environ.get("FOUNDRY_PROJECT_NAME", "")
     conversation_id = os.environ.get("CONVERSATION_ID") or None
     foundry_resource_override = os.environ.get("FOUNDRY_RESOURCE_OVERRIDE") or None
     agent_auth_id = os.environ.get("AGENT_AUTHENTICATION_IDENTITY_CLIENT_ID") or None
@@ -75,7 +75,7 @@ def main() -> None:
     print(f"  PROJECT_NAME:       {project_name}")
 
     if not endpoint or not agent_name or not project_name:
-        sys.exit("Set VOICELIVE_ENDPOINT, AGENT_NAME, and PROJECT_NAME in your .env file.")
+        sys.exit("Set VOICELIVE_ENDPOINT, AGENT_NAME, and FOUNDRY_PROJECT_NAME (or PROJECT_NAME) in your .env file.")
 
     credential = AzureCliCredential()
     logger.info("Using Azure CLI credential")

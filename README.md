@@ -18,38 +18,59 @@ pipwin install pyaudio
 
 ## What gets provisioned
 
-`azd up` creates:
+The existing Foundry (AI Services) account is **reused** for both the agent and the Voice Live endpoint — no new Foundry/Voice Live resource is created.
 
-- A Voice Live (AI Services) resource in a supported region
-- Role assignments:
-  - Voice Live resource's managed identity → **Azure AI User** on the existing Foundry project (cross-resource agent invocation)
-  - Current user → **Azure AI User** on the existing Foundry project
+`azd up` only:
 
-The existing Foundry project is **reused** — no new Foundry project is created. After provisioning, the post-provision hook installs Python dependencies and creates the agent (`src/create_agent_with_voicelive.py`).
+- Assigns the current user **Azure AI User** and **Cognitive Services User** on the existing Foundry account
+- Runs the post-provision hook to install Python dependencies and create the agent (`src/create_agent_with_voicelive.py`)
+
+`VOICELIVE_ENDPOINT` is set to the existing Foundry account's endpoint, per the [Voice Live quickstart](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/voice-live-quickstart?tabs=foundry-new%2Cwindows%2Ckeyless&pivots=programming-language-python).
 
 ## Setup
 
-1. Sign in:
+1. Create and activate a Python virtual environment, install dependencies:
+
+   ```pwsh
+   py -3 -m venv .venv
+   .venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+2. Sign in:
 
    ```pwsh
    az login
    azd auth login
    ```
 
-2. Initialize the azd environment and supply Foundry project info:
+3. Create the azd environment:
 
    ```pwsh
    azd env new voice-agent-demo
-   azd env set FOUNDRY_PROJECT_ENDPOINT "https://<resource>.services.ai.azure.com/api/projects/<project>"
-   azd env set FOUNDRY_RESOURCE_GROUP   "<rg-of-foundry-resource>"
-   azd env set FOUNDRY_RESOURCE_NAME    "<foundry-resource-name>"
-   azd env set FOUNDRY_PROJECT_NAME     "<project>"
-   azd env set MODEL_DEPLOYMENT_NAME    "gpt-4.1-mini"
-   azd env set AGENT_NAME               "MyVoiceAgent"
-   azd env set AZURE_LOCATION           "eastus2"
    ```
 
-3. Provision and create the agent:
+4. Set all required azd env vars using the helper script (interactive — pre-fills with any existing values):
+
+   ```pwsh
+   ./scripts/set-azd-env.ps1
+   ```
+
+   Or non-interactively:
+
+   ```pwsh
+   ./scripts/set-azd-env.ps1 `
+       -FoundryProjectEndpoint "https://<resource>.services.ai.azure.com/api/projects/<project>" `
+       -FoundryResourceGroup   "<rg-of-foundry-resource>" `
+       -FoundryResourceName    "<foundry-resource-name>" `
+       -FoundryProjectName     "<project>" `
+       -ModelDeploymentName    "gpt-4.1-mini" `
+       -AgentName              "MyVoiceAgent" `
+       -AzureLocation          "eastus2"
+   ```
+
+5. Provision and create the agent:
 
    ```pwsh
    azd up
@@ -111,7 +132,6 @@ To use a real recording, drop a 24 kHz / 16-bit / mono WAV at `tests/e2e/fixture
 azure.yaml
 infra/
   main.bicep
-  voicelive.bicep
   foundry-roles.bicep
   main.parameters.json
 scripts/
@@ -135,4 +155,4 @@ tests/
 azd down
 ```
 
-Removes only the Voice Live resource and role assignments. The existing Foundry project is untouched. The agent itself remains in the Foundry project — delete it manually from the portal if needed.
+Removes only the role assignments created by `azd up`. The existing Foundry account and project are untouched. The agent itself remains in the Foundry project — delete it manually from the portal if needed.

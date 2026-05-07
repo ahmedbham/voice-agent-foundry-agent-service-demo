@@ -1,5 +1,5 @@
 azure-ai-projects>=2.0.0b3
-azure-ai-voicelive>=1.2.0b4
+azure-ai-voicelive[aiohttp]>=1.2.0b4
 azure-identity
 python-dotenv
 pyaudio
